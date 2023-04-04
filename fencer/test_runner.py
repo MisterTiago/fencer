@@ -5,7 +5,7 @@ import click
 
 from .api_spec import APISpec
 from .authorized_endpoints import TestAuthEndpoints
-from .sql_injection import SQLInjectionTestRunner
+from .sql_injection.sql_injection_cases_runner import SQLInjectionTestRunner
 from .test_case import AttackStrategy, TestCase, VulnerabilitySeverityLevel, TestReporter
 
 
