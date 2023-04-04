@@ -12,6 +12,22 @@ class SQLInjectionTestRunner:
         self.injection_tests = 0
         self.reports = []
 
+    @staticmethod
+    def __get_test_case(endpoint, url, sql_injection_endpoint=None) -> InjectionTestCaseRunner:
+        return InjectionTestCaseRunner(
+                    test_case=TestCase(
+                        category=AttackStrategy.INJECTION,
+                        test_target="sql_injection__optional_query_parameters",
+                        description=TestDescription(
+                            http_method=getattr(HTTPMethods, endpoint.method.upper()),
+                            url=url, base_url=endpoint.base_url, path=endpoint.path.path,
+                            payload=endpoint.generate_safe_request_payload()
+                            if endpoint.has_request_payload()
+                            else sql_injection_endpoint.generate_unsafe_request_payload(),
+                        )
+                    )
+                )
+
     def run_sql_injection_through_query_parameters(self):
         failing_tests = []
         for endpoint in self.api_spec.endpoints:
@@ -20,17 +36,7 @@ class SQLInjectionTestRunner:
             click.echo(f"    {endpoint.method.upper()} {endpoint.base_url + endpoint.path.path}", nl=False)
             for url in sql_injection.get_urls_with_unsafe_query_params():
                 self.injection_tests += 1
-                test_case = InjectionTestCaseRunner(
-                    test_case=TestCase(
-                        category=AttackStrategy.INJECTION,
-                        test_target="sql_injection__optional_query_parameters",
-                        description=TestDescription(
-                            http_method=getattr(HTTPMethods, endpoint.method.upper()),
-                            url=url, base_url=endpoint.base_url, path=endpoint.path.path,
-                            payload=endpoint.generate_safe_request_payload() if endpoint.has_request_payload() else None,
-                        )
-                    )
-                )
+                test_case = self.__get_test_case(endpoint=endpoint, url=url)
                 test_case.run()
                 if test_case.test_case.result == TestResult.FAIL:
                     endpoint_failing_tests.append(test_case.test_case)
@@ -51,17 +57,7 @@ class SQLInjectionTestRunner:
             click.echo(f"    {endpoint.method.upper()} {endpoint.base_url + endpoint.path.path}", nl=False)
             for url in sql_injection.get_urls_with_unsafe_path_params():
                 self.injection_tests += 1
-                test_case = InjectionTestCaseRunner(
-                    test_case=TestCase(
-                        category=AttackStrategy.INJECTION,
-                        test_target="sql_injection__optional_query_parameters",
-                        description=TestDescription(
-                            http_method=getattr(HTTPMethods, endpoint.method.upper()),
-                            url=url, base_url=endpoint.base_url, path=endpoint.path.path,
-                            payload=endpoint.generate_safe_request_payload() if endpoint.has_request_payload() else None,
-                        )
-                    )
-                )
+                test_case = self.__get_test_case(endpoint=endpoint, url=url)
                 test_case.run()
                 if test_case.test_case.result == TestResult.FAIL:
                     endpoint_failing_tests.append(test_case.test_case)
@@ -80,16 +76,10 @@ class SQLInjectionTestRunner:
             sql_injection = SQLInjectionEndpoint(endpoint)
             click.echo(f"    {endpoint.method.upper()} {endpoint.base_url + endpoint.path.path}", nl=False)
             self.injection_tests += 1
-            test_case = InjectionTestCaseRunner(
-                test_case=TestCase(
-                    category=AttackStrategy.INJECTION,
-                    test_target="sql_injection__optional_query_parameters",
-                    description=TestDescription(
-                        http_method=getattr(HTTPMethods, endpoint.method.upper()),
-                        url=endpoint.safe_url, base_url=endpoint.base_url, path=endpoint.path.path,
-                        payload=sql_injection.generate_unsafe_request_payload()
-                    )
-                )
+            test_case = self.__get_test_case(
+                endpoint=endpoint,
+                url=endpoint.safe_url,
+                sql_injection_endpoint=sql_injection
             )
             test_case.run()
             if test_case.test_case.result == TestResult.FAIL:
