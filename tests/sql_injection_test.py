@@ -1,8 +1,10 @@
+import unittest
+
 from fencer.api_spec import Endpoint
 from fencer.sql_injection.sql_injection_endpoint import SQLInjectionEndpoint
 
 
-class SQLInjectionTest:
+class SQLInjectionTest(unittest.TestCase):
     ORDERS_PATH = '/orders'
     ORDER_ID_PATH = '/orders/{order_id}'
 
@@ -14,7 +16,7 @@ class SQLInjectionTest:
         )
         sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_strategies=['drop table users;'])
         injection_url = sql_injection.get_safe_url_path_with_unsafe_required_query_params()
-        assert injection_url == ['/orders?order_id=drop table users;']
+        self.assertEqual(injection_url, ['/orders?order_id=drop table users;'])
 
     def test_generate_unsafe_optional_query_params(self):
         path = self.ORDERS_PATH
@@ -24,7 +26,7 @@ class SQLInjectionTest:
         )
         sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_strategies=['drop table users;'])
         injection_url = sql_injection.get_safe_url_path_with_unsafe_optional_query_params()
-        assert injection_url == ['/orders?order_id=drop table users;']
+        self.assertEqual(injection_url, ['/orders?order_id=drop table users;'])
 
     def test_generate_unsafe_url_without_optional_query_params(self):
         path = self.ORDER_ID_PATH
@@ -34,7 +36,7 @@ class SQLInjectionTest:
         )
         sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_strategies=['drop table users;'])
         injection_url = sql_injection.get_unsafe_url_path_without_query_params()
-        assert injection_url == ['/orders/drop table users;']
+        self.assertEqual(injection_url, ['/orders/drop table users;'])
 
     def test_generate_unsafe_url_with_safe_required_params(self):
         path = self.ORDER_ID_PATH
@@ -51,7 +53,7 @@ class SQLInjectionTest:
             sql_injection_strategies=['drop table users;'],
         )
         injection_url = sql_injection.get_unsafe_url_path_with_safe_required_query_params()
-        assert injection_url == ['/orders/drop table users;?something=else']
+        self.assertEqual(injection_url, ['/orders/drop table users;?something=else'])
 
     def test_generate_unsafe_request_payload(self):
         path = self.ORDER_ID_PATH
@@ -75,4 +77,4 @@ class SQLInjectionTest:
             endpoint=endpoint, sql_injection_strategies=['drop table users;']
         )
         injection_payload = sql_injection.generate_unsafe_request_payload()
-        assert injection_payload == {'a': 'drop table users;'}
+        self.assertEqual(injection_payload, {'a': 'drop table users;'})
