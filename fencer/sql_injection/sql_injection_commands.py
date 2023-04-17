@@ -1,4 +1,4 @@
-sql_injection_strategies = [
+sql_injection_commands = [
     "' OR 1=1 --",
     "' UNION SELECT * FROM information_schema.tables --",
     '"; DROP TABLE users --',

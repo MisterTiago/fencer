@@ -4,19 +4,19 @@ from typing import List, Callable, Generator, Optional, Union
 from jsf import JSF
 
 from fencer.api_spec import Endpoint, fake_parameter
-from fencer.sql_injection.sql_injection_strategies import sql_injection_strategies
+from fencer.sql_injection.sql_injection_commands import sql_injection_commands
 
 
 @dataclass
 class SQLInjectionEndpoint:
     endpoint: Endpoint
     fake_param_strategy: Optional[Callable] = None
-    sql_injection_strategies: Optional[List[str]] = None
+    sql_injection_commands: Optional[List[str]] = None
     fake_payload_strategy = None
 
     def __post_init__(self):
-        self.sql_injection_strategies = (
-                self.sql_injection_strategies or sql_injection_strategies
+        self.sql_injection_commands = (
+                self.sql_injection_commands or sql_injection_commands
         )
         self.fake_param_strategy = (
             self.fake_param_strategy or fake_parameter
@@ -28,7 +28,7 @@ class SQLInjectionEndpoint:
     def get_safe_url_path_with_unsafe_required_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.required_query_params:
-            for strategy in self.sql_injection_strategies:
+            for strategy in self.sql_injection_commands:
                 param_value = f'?{param["name"]}={strategy}'
                 other_params = [
                     other_param for other_param in self.endpoint.required_query_params
@@ -53,7 +53,7 @@ class SQLInjectionEndpoint:
         )
         if self.endpoint.has_optional_query_params():
             for param in self.endpoint.optional_query_params:
-                for strategy in self.sql_injection_strategies:
+                for strategy in self.sql_injection_commands:
                     param_value = f'?{param["name"]}={strategy}'
                     other_params = [
                         other_param for other_param in self.endpoint.optional_query_params
@@ -72,7 +72,7 @@ class SQLInjectionEndpoint:
     def get_unsafe_url_path_without_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.path.path_params_list:
-            for strategy in self.sql_injection_strategies:
+            for strategy in self.sql_injection_commands:
                 path = self.endpoint.path.path.replace(f'{{{param}}}', strategy)
                 urls.append(self.endpoint.base_url + path)
         return urls
@@ -121,7 +121,7 @@ class SQLInjectionEndpoint:
                 if name not in payload:
                     continue
                 if description['type'] == 'string':
-                    payload[name] = choice(self.sql_injection_strategies)
+                    payload[name] = choice(self.sql_injection_commands)
                 if description['type'] == 'array':
                     payload[name] = self._inject_dangerous_sql_in_payload(
                         payload[name], description
