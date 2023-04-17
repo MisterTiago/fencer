@@ -40,7 +40,7 @@ class SQLInjectionTestRunner:
                     test_case=TestCase(
                         category=AttackStrategy.INJECTION,
                         test_target="sql_injection__optional_query_parameters",
-                        description= self.__get_test_description(
+                        description=self.__get_test_description(
                             endpoint=endpoint,
                             url=url,
                             sql_injection_endpoint=sql_injection_endpoint
