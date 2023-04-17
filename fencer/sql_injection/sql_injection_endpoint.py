@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from random import choice
-from typing import List, Callable, Optional
+from typing import List, Callable, Generator, Optional, Union
 from jsf import JSF
 
 from fencer.api_spec import Endpoint, fake_parameter
@@ -25,7 +25,7 @@ class SQLInjectionEndpoint:
             self.fake_payload_strategy or JSF
         )
 
-    def get_safe_url_path_with_unsafe_required_query_params(self):
+    def get_safe_url_path_with_unsafe_required_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.required_query_params:
             for strategy in self.sql_injection_strategies:
@@ -44,7 +44,7 @@ class SQLInjectionEndpoint:
                 urls.append(url)
         return urls
 
-    def get_safe_url_path_with_unsafe_optional_query_params(self):
+    def get_safe_url_path_with_unsafe_optional_query_params(self) -> List[Optional[str]]:
         urls = []
         base_url = (
             self.endpoint.safe_url_path_with_safe_required_query_params
@@ -69,7 +69,7 @@ class SQLInjectionEndpoint:
                     urls.append(url)
         return urls
 
-    def get_unsafe_url_path_without_query_params(self):
+    def get_unsafe_url_path_without_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.path.path_params_list:
             for strategy in self.sql_injection_strategies:
@@ -77,7 +77,7 @@ class SQLInjectionEndpoint:
                 urls.append(self.endpoint.base_url + path)
         return urls
 
-    def get_unsafe_url_path_with_safe_required_query_params(self):
+    def get_unsafe_url_path_with_safe_required_query_params(self) -> List[Optional[str]]:
         urls = []
         for base_url in self.get_unsafe_url_path_without_query_params():
             urls.append(
@@ -87,7 +87,8 @@ class SQLInjectionEndpoint:
             )
         return urls
 
-    def get_urls_with_unsafe_query_params(self):
+    def get_urls_with_unsafe_query_params(self) -> Generator[str, None, None]:
+        # Generator as type hint return:https://peps.python.org/pep-0484/#annotating-generator-functions-and-coroutines
         urls = []
         if self.endpoint.has_required_query_params():
             urls.extend(self.get_safe_url_path_with_unsafe_required_query_params())
@@ -96,7 +97,8 @@ class SQLInjectionEndpoint:
         for url in urls:
             yield url
 
-    def get_urls_with_unsafe_path_params(self):
+    def get_urls_with_unsafe_path_params(self) -> Generator[str, None, None]:
+        # Generator as type hint return:https://peps.python.org/pep-0484/#annotating-generator-functions-and-coroutines
         urls = []
         if self.endpoint.path.has_path_params():
             urls.extend(self.get_unsafe_url_path_without_query_params())
@@ -105,7 +107,7 @@ class SQLInjectionEndpoint:
         for url in urls:
             yield url
 
-    def _inject_dangerous_sql_in_payload(self, payload, schema):
+    def _inject_dangerous_sql_in_payload(self, payload: dict, schema: dict) -> Union[List, dict]:
         # need to include anyOf, allOf
         if schema['type'] == 'array':
             return [
@@ -126,7 +128,7 @@ class SQLInjectionEndpoint:
                     )
         return payload
 
-    def generate_unsafe_request_payload(self):
+    def generate_unsafe_request_payload(self) -> Union[List, dict]:
         # this should be plural returning an array of payloads with different
         # sql injection strategies
         schema = self.endpoint.body['content']['application/json']['schema']
