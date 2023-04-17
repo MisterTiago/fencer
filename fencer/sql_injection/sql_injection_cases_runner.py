@@ -1,4 +1,5 @@
 import click
+from typing import List, Optional
 
 from fencer.api_spec import APISpec, Endpoint
 from fencer.sql_injection.sql_injection_endpoint import SQLInjectionEndpoint
@@ -48,7 +49,7 @@ class SQLInjectionTestRunner:
                     )
                 )
 
-    def run_sql_injection_through_query_parameters(self):
+    def run_sql_injection_through_query_parameters(self) -> List[Optional[TestCase]]:
         failing_tests = []
         for endpoint in self.api_spec.endpoints:
             sql_injection = SQLInjectionEndpoint(endpoint)
@@ -67,7 +68,7 @@ class SQLInjectionTestRunner:
                 click.echo(" ✅")
         return failing_tests
 
-    def run_sql_injection_through_path_parameters(self):
+    def run_sql_injection_through_path_parameters(self) -> List[Optional[TestCase]]:
         failing_tests = []
         for endpoint in self.api_spec.endpoints:
             if not endpoint.has_path_params():
@@ -88,7 +89,7 @@ class SQLInjectionTestRunner:
                 click.echo(" ✅")
         return failing_tests
 
-    def run_sql_injection_through_request_payloads(self):
+    def run_sql_injection_through_request_payloads(self) -> List[Optional[TestCase]]:
         failing_tests = []
         for endpoint in self.api_spec.endpoints:
             if not endpoint.has_request_payload():
