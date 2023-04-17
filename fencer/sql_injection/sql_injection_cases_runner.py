@@ -1,6 +1,6 @@
 import click
 
-from fencer.api_spec import  APISpec
+from fencer.api_spec import APISpec, Endpoint
 from fencer.sql_injection.sql_injection_endpoint import SQLInjectionEndpoint
 from fencer.sql_injection.sql_injection_test_case_runner import InjectionTestCaseRunner
 from fencer.test_case import TestResult, TestCase, AttackStrategy, TestDescription, HTTPMethods
@@ -13,17 +13,37 @@ class SQLInjectionTestRunner:
         self.reports = []
 
     @staticmethod
-    def __get_test_case(endpoint, url, sql_injection_endpoint=None) -> InjectionTestCaseRunner:
+    def __get_test_description(
+            endpoint: Endpoint,
+            url,
+            sql_injection_endpoint: SQLInjectionEndpoint = None
+    ) -> TestDescription:
+        if endpoint.has_request_payload():
+            payload = endpoint.generate_safe_request_payload()
+        else:
+            payload = sql_injection_endpoint.generate_unsafe_request_payload()
+        return TestDescription(
+            http_method=getattr(HTTPMethods, endpoint.method.upper()),
+            url=url,
+            base_url=endpoint.base_url,
+            path=endpoint.path.path,
+            payload=payload
+        )
+
+    def __get_test_case(
+            self,
+            endpoint: Endpoint,
+            url,
+            sql_injection_endpoint: SQLInjectionEndpoint = None
+    ) -> InjectionTestCaseRunner:
         return InjectionTestCaseRunner(
                     test_case=TestCase(
                         category=AttackStrategy.INJECTION,
                         test_target="sql_injection__optional_query_parameters",
-                        description=TestDescription(
-                            http_method=getattr(HTTPMethods, endpoint.method.upper()),
-                            url=url, base_url=endpoint.base_url, path=endpoint.path.path,
-                            payload=endpoint.generate_safe_request_payload()
-                            if endpoint.has_request_payload()
-                            else sql_injection_endpoint.generate_unsafe_request_payload(),
+                        description= self.__get_test_description(
+                            endpoint=endpoint,
+                            url=url,
+                            sql_injection_endpoint=sql_injection_endpoint
                         )
                     )
                 )
