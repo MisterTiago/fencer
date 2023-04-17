@@ -5,7 +5,7 @@ import click
 
 from .api_spec import APISpec
 from .authorized_endpoints import TestAuthEndpoints
-from .sql_injection.sql_injection_cases_runner import SQLInjectionTestRunner
+from .sql_injection.sql_injection_strategies_runner import SQLInjectionStrategiesRunner
 from .test_case import AttackStrategy, TestCase, VulnerabilitySeverityLevel, TestReporter
 
 
@@ -15,7 +15,7 @@ class TestRunner:
         self.reports = []
 
     def run_sql_injection_attacks(self):
-        sql_injection_test_runner = SQLInjectionTestRunner(api_spec=self.api_spec)
+        sql_injection_test_runner = SQLInjectionStrategiesRunner(api_spec=self.api_spec)
 
         failing_tests: list[TestCase] = []
 

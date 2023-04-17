@@ -7,7 +7,7 @@ from fencer.sql_injection.sql_injection_test_case_runner import InjectionTestCas
 from fencer.test_case import TestResult, TestCase, AttackStrategy, TestDescription, HTTPMethods
 
 
-class SQLInjectionTestRunner:
+class SQLInjectionStrategiesRunner:
     def __init__(self, api_spec: APISpec):
         self.api_spec = api_spec
         self.injection_tests = 0
