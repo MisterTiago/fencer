@@ -28,8 +28,8 @@ class SQLInjectionEndpoint:
     def get_safe_url_path_with_unsafe_required_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.required_query_params:
-            for strategy in self.sql_injection_commands:
-                param_value = f'?{param["name"]}={strategy}'
+            for command in self.sql_injection_commands:
+                param_value = f'?{param["name"]}={command}'
                 other_params = [
                     other_param for other_param in self.endpoint.required_query_params
                     if other_param['name'] != param['name']
@@ -53,8 +53,8 @@ class SQLInjectionEndpoint:
         )
         if self.endpoint.has_optional_query_params():
             for param in self.endpoint.optional_query_params:
-                for strategy in self.sql_injection_commands:
-                    param_value = f'?{param["name"]}={strategy}'
+                for command in self.sql_injection_commands:
+                    param_value = f'?{param["name"]}={command}'
                     other_params = [
                         other_param for other_param in self.endpoint.optional_query_params
                         if other_param['name'] != param['name']
@@ -72,8 +72,8 @@ class SQLInjectionEndpoint:
     def get_unsafe_url_path_without_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.path.path_params_list:
-            for strategy in self.sql_injection_commands:
-                path = self.endpoint.path.path.replace(f'{{{param}}}', strategy)
+            for command in self.sql_injection_commands:
+                path = self.endpoint.path.path.replace(f'{{{param}}}', command)
                 urls.append(self.endpoint.base_url + path)
         return urls
 
