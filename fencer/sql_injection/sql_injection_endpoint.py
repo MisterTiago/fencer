@@ -25,7 +25,7 @@ class SQLInjectionEndpoint:
             self.fake_payload_strategy or JSF
         )
 
-    def get_safe_url_paths_with_unsafe_required_query_params(self) -> List[Optional[str]]:
+    def __get_safe_url_paths_with_unsafe_required_query_params(self) -> List[Optional[str]]:
         urls = []
         for param in self.endpoint.required_query_params:
             for command in self.sql_injection_commands:
@@ -44,7 +44,7 @@ class SQLInjectionEndpoint:
                 urls.append(url)
         return urls
 
-    def get_safe_url_paths_with_unsafe_optional_query_params(self) -> List[Optional[str]]:
+    def __get_safe_url_paths_with_unsafe_optional_query_params(self) -> List[Optional[str]]:
         urls = []
         base_url = (
             self.endpoint.safe_url_path_with_safe_required_query_params
@@ -91,9 +91,9 @@ class SQLInjectionEndpoint:
         # Generator as type hint return:https://peps.python.org/pep-0484/#annotating-generator-functions-and-coroutines
         urls = []
         if self.endpoint.has_required_query_params():
-            urls.extend(self.get_safe_url_paths_with_unsafe_required_query_params())
+            urls.extend(self.__get_safe_url_paths_with_unsafe_required_query_params())
         if self.endpoint.has_optional_query_params():
-            urls.extend(self.get_safe_url_paths_with_unsafe_optional_query_params())
+            urls.extend(self.__get_safe_url_paths_with_unsafe_optional_query_params())
         for url in urls:
             yield url
 
