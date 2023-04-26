@@ -14,8 +14,8 @@ class SQLInjectionTest(unittest.TestCase):
             base_url='', method='', responses={}, api_path=path,
             parameters=[{'name': 'order_id', 'schema': {'type': 'string'}, 'in': 'query', 'required': True}]
         )
-        sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_strategies=['drop table users;'])
-        injection_url = sql_injection.get_safe_url_path_with_unsafe_required_query_params()
+        sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_commands=['drop table users;'])
+        injection_url = sql_injection.get_safe_url_paths_with_unsafe_required_query_params()
         self.assertEqual(injection_url, ['/orders?order_id=drop table users;'])
 
     def test_generate_unsafe_optional_query_params(self):
@@ -24,8 +24,8 @@ class SQLInjectionTest(unittest.TestCase):
             base_url='', method='', responses={}, api_path=path,
             parameters=[{'name': 'order_id', 'schema': {'type': 'string'}, 'in': 'query', 'required': False}]
         )
-        sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_strategies=['drop table users;'])
-        injection_url = sql_injection.get_safe_url_path_with_unsafe_optional_query_params()
+        sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_commands=['drop table users;'])
+        injection_url = sql_injection.get_safe_url_paths_with_unsafe_optional_query_params()
         self.assertEqual(injection_url, ['/orders?order_id=drop table users;'])
 
     def test_generate_unsafe_url_without_optional_query_params(self):
@@ -34,8 +34,8 @@ class SQLInjectionTest(unittest.TestCase):
             base_url='', method='', responses={}, api_path=path,
             parameters=[{'name': 'order_id', 'schema': {'type': 'string'}, 'in': 'path', 'required': True}]
         )
-        sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_strategies=['drop table users;'])
-        injection_url = sql_injection.get_unsafe_url_path_without_query_params()
+        sql_injection = SQLInjectionEndpoint(endpoint=endpoint, sql_injection_commands=['drop table users;'])
+        injection_url = sql_injection.get_unsafe_url_paths_without_query_params()
         self.assertEqual(injection_url, ['/orders/drop table users;'])
 
     def test_generate_unsafe_url_with_safe_required_params(self):
@@ -50,9 +50,9 @@ class SQLInjectionTest(unittest.TestCase):
         sql_injection = SQLInjectionEndpoint(
             endpoint=endpoint,
             fake_param_strategy=lambda _: 'else',
-            sql_injection_strategies=['drop table users;'],
+            sql_injection_commands=['drop table users;'],
         )
-        injection_url = sql_injection.get_unsafe_url_path_with_safe_required_query_params()
+        injection_url = sql_injection.get_unsafe_url_paths_with_safe_required_query_params()
         self.assertEqual(injection_url, ['/orders/drop table users;?something=else'])
 
     def test_generate_unsafe_request_payload(self):
@@ -74,7 +74,7 @@ class SQLInjectionTest(unittest.TestCase):
             }
         )
         sql_injection = SQLInjectionEndpoint(
-            endpoint=endpoint, sql_injection_strategies=['drop table users;']
+            endpoint=endpoint, sql_injection_commands=['drop table users;']
         )
         injection_payload = sql_injection.generate_unsafe_request_payload()
         self.assertEqual(injection_payload, {'a': 'drop table users;'})
